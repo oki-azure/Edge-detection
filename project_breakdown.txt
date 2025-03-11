@@ -1,0 +1,169 @@
+Goal:
+The project is about detecting edges in images using math. Edges are the lines or boundaries between different objects or regions in an image. To do this, we use something called the Laplace equation, which is a math equation that helps us find these edges.
+
+Math Behind It:
+
+The Laplace equation is a way to describe how pixel values (the brightness of each point in the image) change across the image.
+
+We use a finite difference approximation to turn this equation into something we can solve on a computer. This means we break the image into a grid of pixels and use simple math to approximate how the pixel values change.
+
+Iterative Methods:
+
+To solve the equation, we use two methods: Jacobi and Gauss-Seidel. Both methods update the pixel values step by step until they converge (stop changing much).
+
+Jacobi uses the old values from the previous step to update the new values.
+
+Gauss-Seidel uses the new values as soon as they are available, which makes it faster.
+
+Implementation Steps:
+
+Load a grayscale image (like the famous "Lena" image).
+
+Turn the image into a grid of numbers (pixel values).
+
+Apply the Laplace equation using Jacobi and Gauss-Seidel methods.
+
+Stop when the pixel values stop changing much (using a stopping criterion).
+
+Visualize the results to see the edges.
+
+What You Need to Do:
+
+Write code to implement Jacobi and Gauss-Seidel methods.
+
+Compare how fast each method converges (how many steps it takes to get a good result).
+
+Submit the code, images, and a report.
+
+
+How It Works:
+Load the Image:
+
+The image is loaded and converted to grayscale (black and white) using the PIL library.
+
+The image is resized to 256x256 pixels.
+
+Jacobi Method:
+
+The Jacobi method updates each pixel based on its neighbors from the previous iteration.
+
+It stops when the change between iterations is small (less than 1e-6).
+
+Gauss-Seidel Method:
+
+The Gauss-Seidel method updates each pixel using the latest values available, which makes it faster.
+
+It also stops when the change between iterations is small.
+
+Visualization:
+
+The original image and the results from both methods are displayed side by side using matplotlib.
+
+What You Need to Do:
+Download the Lena Image:
+
+You can download the "Lena" image from the internet (just search for "Lena test image").
+
+Run the Code:
+
+Replace 'lena.png' with the path to your image.
+
+Run the code, and it will show you the original image and the results from both methods.
+
+Compare Results:
+
+Look at the number of iterations each method took to converge.
+
+Compare the edge detection results visually.
+
+Expected Output:
+You’ll see three images:
+
+The original grayscale image.
+
+The image after applying the Jacobi method (edges detected).
+
+The image after applying the Gauss-Seidel method (edges detected).
+
+The Gauss-Seidel method should converge faster (fewer iterations) than the Jacobi method.
+
+
+Original Image:
+This is the grayscale version of the input image (likely the "Lena" image or another test image you used).
+
+It shows the raw pixel values before any edge detection is applied.
+
+The x-axis and y-axis represent the pixel coordinates (from 0 to 255, since the image is 256x256 pixels).
+
+2. Jacobi Method:
+This is the result of applying the Jacobi iterative method to the original image.
+
+The Jacobi method smooths the image and highlights edges by solving the Laplace equation.
+
+You should see darker and lighter regions that correspond to edges in the original image.
+
+The numbers on the axes (0 to 250) still represent pixel coordinates.
+
+3. Gauss-Seidel Method:
+This is the result of applying the Gauss-Seidel iterative method to the original image.
+
+Like the Jacobi method, it also detects edges, but it typically converges faster (uses fewer iterations to get a good result).
+
+The edges might look slightly sharper or more defined compared to the Jacobi result, depending on how many iterations were used.
+
+4. Numbers and Labels:
+The numbers on the axes (0, 50, 100, ..., 250) represent the pixel coordinates.
+
+The label (x, y) = (180.6, 0.01) might be a mouse hover or click coordinate, indicating where your cursor was when you took the screenshot. It shows the (x, y) position in the image and possibly the pixel intensity value at that location.
+
+The [96.0] could be the pixel intensity value at the specific (x, y) coordinate you hovered over or clicked on.
+
+What You Should Look For:
+Edge Detection:
+
+In both the Jacobi and Gauss-Seidel results, you should see darker lines or regions that correspond to edges in the original image.
+
+These edges are where the pixel intensity changes abruptly (e.g., the boundary between a dark object and a light background).
+
+Comparison Between Methods:
+
+Compare the Jacobi and Gauss-Seidel results. The Gauss-Seidel method should produce a similar result but with fewer iterations (faster convergence).
+
+Look for differences in sharpness or clarity of the edges.
+
+Convergence:
+
+The code prints the number of iterations and the final error for each method. For example:
+
+Jacobi converged in X iterations with error Y
+
+Gauss-Seidel converged in Z iterations with error W
+
+You should see that Gauss-Seidel converges faster (fewer iterations) than Jacobi.
+
+Example Output:
+If the code ran successfully, you should see something like this in the console:
+
+Copy
+Jacobi converged in 500 iterations with error 9.99e-07
+Gauss-Seidel converged in 300 iterations with error 9.99e-07
+This tells you how many iterations each method took to converge and how small the final error was.
+
+Next Steps:
+Analyze the Results:
+
+Compare the edge detection results visually. Are the edges clear and well-defined?
+
+Check the number of iterations for each method. Did Gauss-Seidel converge faster?
+
+Experiment:
+
+Try different images or adjust the stopping criterion (tol) to see how it affects the results.
+
+You can also increase or decrease the number of iterations (max_iter) to see how it impacts convergence.
+
+Write Your Report:
+
+Summarize your findings. Which method worked better? How many iterations did each method take?
+
+Include the images and any observations about edge detection quality.
