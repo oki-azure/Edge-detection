@@ -8,7 +8,7 @@ import time
 def load_image(image_path):
     image = Image.open(image_path).convert('L')  # Convert to grayscale
     image = image.resize((256, 256))  # Resize to 256x256
-    image_array = np.array(image, dtype=float)
+    image_array = np.array(image, dtype=np.float64)
     return image_array
 
 # Laplace operator kernel
@@ -146,10 +146,10 @@ sharpened_gauss_seidel = sharpen_image(smoothed_gauss_seidel, alpha=0.1)
 edges_original = detect_edges(original_image, threshold=0.1)
     
 # Detect edges on the Jacobi-smoothed and sharpened image
-edges_jacobi = detect_edges(sharpened_jacobi, threshold=0.1)
+edges_jacobi = detect_edges(smoothed_jacobi, threshold=0.08)
     
 # Detect edges on the Gauss-Seidel-smoothed and sharpened image
-edges_gauss_seidel = detect_edges(sharpened_gauss_seidel, threshold=0.1)
+edges_gauss_seidel = detect_edges(sharpened_gauss_seidel, threshold=0.01)
     
 # Visualize the results
 visualize_results(original_image, smoothed_jacobi, smoothed_gauss_seidel, edges_original, edges_jacobi, edges_gauss_seidel)

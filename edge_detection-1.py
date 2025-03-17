@@ -8,7 +8,7 @@ import time
 def load_image(image_path):
     image = Image.open(image_path).convert('L')  # Convert to grayscale
     image = image.resize((256, 256))  # Resize to 256x256
-    image_array = np.array(image, dtype=float)
+    image_array = np.array(image, dtype=np.float64)
     return image_array
 
 # Laplace operator kernel
@@ -20,7 +20,7 @@ def laplace_operator(image):
     return laplace
 
 # Detect edges using the Laplace operator
-def detect_edges(image, threshold=0.1):
+def detect_edges(image, threshold=0.02):
     # Apply the Laplace operator
     laplace = laplace_operator(image)
     
@@ -35,7 +35,6 @@ def detect_edges(image, threshold=0.1):
     
     return edges
 
-# Jacobi method for smoothing
 def jacobi_method(image, max_iter=5, tol=1e-6):
     u = image.copy()
     u_new = np.zeros_like(u)
@@ -45,7 +44,8 @@ def jacobi_method(image, max_iter=5, tol=1e-6):
 
     while error > tol and iteration < max_iter:
         u_new[1:-1, 1:-1] = 0.25 * (u[1:-1, :-2] + u[1:-1, 2:] + u[:-2, 1:-1] + u[2:, 1:-1])
-        error = np.linalg.norm(u_new - u) / np.linalg.norm(u)
+        # Use infinity norm for error calculation
+        error = np.max(np.abs(u_new - u)) / np.max(np.abs(u))
         errors.append(error)  # Store the error
         u = u_new.copy()
         iteration += 1
@@ -53,7 +53,6 @@ def jacobi_method(image, max_iter=5, tol=1e-6):
     print(f"Jacobi converged in {iteration} iterations with final error {error}")
     return u, errors
 
-# Gauss-Seidel method for smoothing
 def gauss_seidel_method(image, max_iter=5, tol=1e-6):
     u = image.copy()
     error = np.inf
@@ -64,13 +63,23 @@ def gauss_seidel_method(image, max_iter=5, tol=1e-6):
         u_old = u.copy()
         for i in range(1, u.shape[0]-1):
             for j in range(1, u.shape[1]-1):
+                # Update using the Gauss-Seidel formula
                 u[i, j] = 0.25 * (u[i-1, j] + u[i+1, j] + u[i, j-1] + u[i, j+1])
-        error = np.linalg.norm(u - u_old) / np.linalg.norm(u_old)
+        
+        # Compute error using infinity norm
+        error = np.max(np.abs(u - u_old)) / np.max(np.abs(u_old))
         errors.append(error)  # Store the error
         iteration += 1
 
     print(f"Gauss-Seidel converged in {iteration} iterations with final error {error}")
     return u, errors
+
+# Sharpen the image to enhance edges
+def sharpen_image(image, alpha=1):
+    laplace = laplace_operator(image)
+    sharpened = image - alpha * laplace
+    sharpened = np.clip(sharpened, 0, 255)  # Ensure pixel values are within valid range
+    return sharpened 
 
 # Visualize results
 def visualize_results(original, smoothed_jacobi, smoothed_gauss_seidel, edges_original, edges_jacobi, edges_gauss_seidel):
@@ -114,41 +123,37 @@ def plot_convergence(jacobi_errors, gauss_seidel_errors):
     plt.grid(True)
     plt.show()
 
-# Main function
-def main():
-    # Load the image
-    image_path = 'lena.png'  # Replace with your image path
-    original_image = load_image(image_path)
+# Load the image
+image_path = 'lena.png' 
+original_image = load_image(image_path)
     
-    # Step 1: Apply the Laplace operator to the original image
-    edge_enhanced_image = laplace_operator(original_image)
+# Apply Jacobi smoothing and measure time
+start_time = time.time()
+smoothed_jacobi, jacobi_errors = jacobi_method(original_image, max_iter=5, tol=1e-6)
+jacobi_time = time.time() - start_time
+print(f"Jacobi method took {jacobi_time:.4f} seconds")
     
-    # Step 2: Apply Jacobi smoothing to the edge-enhanced image
-    start_time = time.time()
-    smoothed_jacobi, jacobi_errors = jacobi_method(edge_enhanced_image, max_iter=5, tol=1e-6)
-    jacobi_time = time.time() - start_time
-    print(f"Jacobi method took {jacobi_time:.4f} seconds")
+# Apply Gauss-Seidel smoothing and measure time
+start_time = time.time()
+smoothed_gauss_seidel, gauss_seidel_errors = gauss_seidel_method(original_image, max_iter=5, tol=1e-6)
+gauss_seidel_time = time.time() - start_time
+print(f"Gauss-Seidel method took {gauss_seidel_time:.4f} seconds")
     
-    # Step 3: Apply Gauss-Seidel smoothing to the edge-enhanced image
-    start_time = time.time()
-    smoothed_gauss_seidel, gauss_seidel_errors = gauss_seidel_method(edge_enhanced_image, max_iter=5, tol=1e-6)
-    gauss_seidel_time = time.time() - start_time
-    print(f"Gauss-Seidel method took {gauss_seidel_time:.4f} seconds")
+# Sharpen the smoothed images to enhance edges
+sharpened_jacobi = sharpen_image(smoothed_jacobi, alpha=1)
+sharpened_gauss_seidel = sharpen_image(smoothed_gauss_seidel, alpha=1) 
     
-    # Step 4: Detect edges on the original image
-    edges_original = detect_edges(original_image, threshold=0.1)
+# Detect edges on the original image
+edges_original = detect_edges(original_image, threshold=0.1)
     
-    # Step 5: Detect edges on the Jacobi-smoothed image
-    edges_jacobi = detect_edges(smoothed_jacobi, threshold=0.1)
+# Detect edges on the Jacobi-smoothed and sharpened image
+edges_jacobi = detect_edges(smoothed_jacobi, threshold=0.08)
     
-    # Step 6: Detect edges on the Gauss-Seidel-smoothed image
-    edges_gauss_seidel = detect_edges(smoothed_gauss_seidel, threshold=0.1)
+# Detect edges on the Gauss-Seidel-smoothed and sharpened image
+edges_gauss_seidel = detect_edges(sharpened_gauss_seidel, threshold=0.01)
     
-    # Step 7: Visualize the results
-    visualize_results(original_image, smoothed_jacobi, smoothed_gauss_seidel, edges_original, edges_jacobi, edges_gauss_seidel)
+# Visualize the results
+visualize_results(original_image, smoothed_jacobi, smoothed_gauss_seidel, edges_original, edges_jacobi, edges_gauss_seidel)
     
-    # Step 8: Plot convergence rates
-    plot_convergence(jacobi_errors, gauss_seidel_errors)
-
-if __name__ == "__main__":
-    main()
+# Plot convergence rates
+plot_convergence(jacobi_errors, gauss_seidel_errors)
